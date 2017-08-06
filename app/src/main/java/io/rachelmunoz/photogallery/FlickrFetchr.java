@@ -2,12 +2,19 @@ package io.rachelmunoz.photogallery;
 
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Gallery;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by rachelmunoz on 8/5/17.
@@ -49,7 +56,9 @@ public class FlickrFetchr {
 		return new String(getUrlBytes(urlSpec));
 	}
 
-	public void fetchItems(){
+	public List<GalleryItem> fetchItems(){
+		List<GalleryItem> items = new ArrayList<>();
+
 		try {
 			String url = Uri.parse("https://api.flickr.com/services/rest/")
 					.buildUpon()
@@ -59,11 +68,38 @@ public class FlickrFetchr {
 					.appendQueryParameter("nojsoncallback", "1")
 					.appendQueryParameter("extras", "url_s")
 					.build().toString();
-
 			String jsonString = getUrlString(url);
 			Log.i(TAG, "Received JSON: " + jsonString);
+			JSONObject jsonBody = new JSONObject(jsonString);
+
+			parseItems(items, jsonBody);
 		} catch (IOException ioe){
 			Log.e(TAG, "Failed to fetch items", ioe);
+		} catch (JSONException je){
+			Log.e(TAG, "Failed to parse JSON", je);
+		}
+
+		return items;
+	}
+
+	private void parseItems(List<GalleryItem> items, JSONObject jsonBody)throws IOException, JSONException{
+
+		JSONObject photosJsonObject = jsonBody.getJSONObject("photos");
+		JSONArray photosJsonArray = photosJsonObject.getJSONArray("photo");
+
+		for (int i = 0; i < photosJsonArray.length(); i++){
+			photosJsonObject = photosJsonArray.getJSONObject(i);
+
+			GalleryItem item = new GalleryItem();
+			item.setId(photosJsonObject.getString("id"));
+			item.setCaption(photosJsonObject.getString("title"));
+
+			if(!photosJsonObject.has("url_s")){
+				continue;
+			}
+
+			item.setUrl(photosJsonObject.getString("url_s"));
+			items.add(item);
 		}
 	}
 
