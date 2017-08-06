@@ -1,14 +1,17 @@
 package io.rachelmunoz.photogallery;
 
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -33,7 +36,7 @@ public class PhotoGalleryFragment extends Fragment {
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setRetainInstance(true);
-		new FetchItemsTask().execute();
+		new FetchItemsTask().execute(); // starts the background thread
 	}
 
 	@Nullable
@@ -44,7 +47,7 @@ public class PhotoGalleryFragment extends Fragment {
 		mPhotoRecyclerView = v.findViewById(R.id.photo_recycler_view);
 		mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
-		setupAdapter();
+		setupAdapter(); // waits for Fragment to attach to Activity
 
 		return v;
 	}
@@ -56,16 +59,16 @@ public class PhotoGalleryFragment extends Fragment {
 	}
 
 	private class PhotoHolder extends RecyclerView.ViewHolder {
-		private TextView mTitleTextView;
+		private ImageView mItemImageView;
 
 		public PhotoHolder(View itemView) {
 			super(itemView);
 
-			mTitleTextView = (TextView) itemView;
+			mItemImageView = (ImageView) itemView.findViewById(R.id.item_image_view);
 		}
 
-		public void bindGalleryItem(GalleryItem item){
-			mTitleTextView.setText(item.toString());
+		public void bindDrawable(Drawable drawable){
+			mItemImageView.setImageDrawable(drawable);
 		}
 	}
 
@@ -78,7 +81,7 @@ public class PhotoGalleryFragment extends Fragment {
 		@Override
 		protected void onPostExecute(List<GalleryItem> galleryItems) {
 			mItems = galleryItems;
-			setupAdapter();
+			setupAdapter(); // when all data comes in, update the adapter
 		}
 	}
 
@@ -91,14 +94,16 @@ public class PhotoGalleryFragment extends Fragment {
 
 		@Override
 		public PhotoHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			TextView textView = new TextView(getActivity());
-			return new PhotoHolder(textView);
+			LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
+			View view = layoutInflater.inflate(R.layout.list_item_gallery, parent, false);
+			return new PhotoHolder(view);
 		}
 
 		@Override
 		public void onBindViewHolder(PhotoHolder holder, int position) {
 			GalleryItem item = mGalleryItems.get(position);
-			holder.bindGalleryItem(item);
+			Drawable placeholder = getResources().getDrawable(R.drawable.bill_up_close);
+			holder.bindDrawable(placeholder);
 		}
 
 		@Override
