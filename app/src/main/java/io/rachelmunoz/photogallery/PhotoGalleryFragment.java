@@ -17,7 +17,7 @@ public class PhotoGalleryFragment extends Fragment {
 	private RecyclerView mPhotoRecyclerView;
 
 
-	public static PhotoGalleryFragment newInstance(){
+	public static PhotoGalleryFragment newInstance(){ //static factory method so can inject dependencies if needed
 		return new PhotoGalleryFragment();
 	}
 
