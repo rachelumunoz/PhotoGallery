@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,10 +29,10 @@ public class PhotoGalleryFragment extends Fragment {
 
 	private RecyclerView mPhotoRecyclerView;
 	private List<GalleryItem> mItems = new ArrayList<>();
-	private ThumbnailDownloader<PhotoHolder> mThumbnailDownloader;
+	private ThumbnailDownloader<PhotoViewHolder> mThumbnailDownloader;
 
 
-	public static PhotoGalleryFragment newInstance(){
+	public static PhotoGalleryFragment newInstance(){ //static factory method so can inject dependencies if needed
 		return new PhotoGalleryFragment();
 	}
 
@@ -41,16 +40,16 @@ public class PhotoGalleryFragment extends Fragment {
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setRetainInstance(true);
-		new FetchItemsTask().execute(); // starts the background thread
+		new FetchItemsTask().execute(); // executes FlickrFetchr Api call in background thread
 
-		Handler responseHandler = new Handler(); // Handler attaches self Looper of UI Thread
+		Handler responseHandler = new Handler();
 		mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
 		mThumbnailDownloader.setThumbnailDownloadListener(
-				new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>(){
+				new ThumbnailDownloader.ThumbnailDownloadListener<PhotoViewHolder>(){
 					@Override
-					public void onThumbnailDownloaded(PhotoHolder photoHolder, Bitmap thumbnail) {
+					public void onThumbnailDownloaded(PhotoViewHolder target, Bitmap thumbnail) {
 						Drawable drawable = new BitmapDrawable(getResources(), thumbnail);
-						photoHolder.bindDrawable(drawable);
+						target.bindDrawable(drawable);
 					}
 				}
 		);
@@ -68,7 +67,7 @@ public class PhotoGalleryFragment extends Fragment {
 		mPhotoRecyclerView = v.findViewById(R.id.photo_recycler_view);
 		mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
-		setupAdapter(); // waits for Fragment to attach to Activity
+		setUpAdapter();
 
 		return v;
 	}
@@ -82,20 +81,21 @@ public class PhotoGalleryFragment extends Fragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		boolean quit = mThumbnailDownloader.quit();
+		mThumbnailDownloader.quit();
 		Log.i(TAG, "Background thread destroyed");
 	}
 
-	private void setupAdapter() {
+	private void setUpAdapter() {
 		if (isAdded()){
 			mPhotoRecyclerView.setAdapter(new PhotoAdapter(mItems));
 		}
+
 	}
 
-	private class PhotoHolder extends RecyclerView.ViewHolder {
+	class PhotoViewHolder extends RecyclerView.ViewHolder {
 		private ImageView mItemImageView;
 
-		public PhotoHolder(View itemView) {
+		public PhotoViewHolder(View itemView) {
 			super(itemView);
 
 			mItemImageView = (ImageView) itemView.findViewById(R.id.item_image_view);
@@ -106,7 +106,36 @@ public class PhotoGalleryFragment extends Fragment {
 		}
 	}
 
-	private class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>> {
+	class PhotoAdapter extends RecyclerView.Adapter<PhotoViewHolder>{
+		private List<GalleryItem> mGalleryItems;
+
+		public PhotoAdapter(List<GalleryItem> galleryItems) {
+			mGalleryItems = galleryItems;
+		}
+
+		@Override
+		public PhotoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			LayoutInflater inflater = LayoutInflater.from(getActivity());
+			View view = inflater.inflate(R.layout.list_item_gallery, parent, false);
+			return new PhotoViewHolder(view);
+		}
+
+		@Override
+		public void onBindViewHolder(PhotoViewHolder holder, int position) {
+			GalleryItem galleryItem = mGalleryItems.get(position);
+//			holder.bindGalleryItem(galleryItem);
+			Drawable placeholder = getResources().getDrawable(R.drawable.bill_up_close);
+			holder.bindDrawable(placeholder);
+			mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl());
+		}
+
+		@Override
+		public int getItemCount() {
+			return mGalleryItems.size();
+		}
+	}
+
+	class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>> {
 		@Override
 		protected List<GalleryItem> doInBackground(Void... voids) {
 			return new FlickrFetchr().fetchItems();
@@ -115,35 +144,7 @@ public class PhotoGalleryFragment extends Fragment {
 		@Override
 		protected void onPostExecute(List<GalleryItem> galleryItems) {
 			mItems = galleryItems;
-			setupAdapter(); // when all data comes in, update the adapter
-		}
-	}
-
-	private class PhotoAdapter extends RecyclerView.Adapter<PhotoHolder> {
-		private List<GalleryItem> mGalleryItems;
-
-		public PhotoAdapter(List<GalleryItem> galleryItems) {
-			mGalleryItems = galleryItems;
-		}
-
-		@Override
-		public PhotoHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-			View view = layoutInflater.inflate(R.layout.list_item_gallery, parent, false);
-			return new PhotoHolder(view);
-		}
-
-		@Override
-		public void onBindViewHolder(PhotoHolder holder, int position) {
-			GalleryItem item = mGalleryItems.get(position);
-			Drawable placeholder = getResources().getDrawable(R.drawable.bill_up_close);
-			holder.bindDrawable(placeholder);
-			mThumbnailDownloader.queueThumbnail(holder, item.getUrl());
-		}
-
-		@Override
-		public int getItemCount() {
-			return mGalleryItems.size();
+			setUpAdapter();
 		}
 	}
 }

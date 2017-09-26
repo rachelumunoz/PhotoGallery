@@ -1,7 +1,7 @@
 package io.rachelmunoz.photogallery;
 
 /**
- * Created by rachelmunoz on 8/5/17.
+ * Created by rachelmunoz on 9/20/17.
  */
 
 public class GalleryItem {

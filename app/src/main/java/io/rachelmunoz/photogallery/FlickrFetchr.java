@@ -2,7 +2,6 @@ package io.rachelmunoz.photogallery;
 
 import android.net.Uri;
 import android.util.Log;
-import android.widget.Gallery;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,24 +16,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by rachelmunoz on 8/5/17.
+ * Created by rachelmunoz on 9/20/17.
  */
 
 public class FlickrFetchr {
+
 	private static final String TAG = "FlickrFetchr";
 	private static final String API_KEY = "74c6fc025d3092b8881ff22c852685f2";
 
-
 	public byte[] getUrlBytes(String urlSpec) throws IOException {
 		URL url = new URL(urlSpec);
-		HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			InputStream in = connection.getInputStream();
 
 			if (connection.getResponseCode() != HttpURLConnection.HTTP_OK){
-				throw new IOException(connection.getResponseMessage() + ": with "+ urlSpec);
+				throw new IOException(connection.getResponseMessage() + ": with: "+ urlSpec);
 			}
 
 			int bytesRead = 0;
@@ -43,21 +42,19 @@ public class FlickrFetchr {
 			while((bytesRead = in.read(buffer)) > 0){
 				out.write(buffer, 0, bytesRead);
 			}
-
 			out.close();
 			return out.toByteArray();
 		} finally {
 			connection.disconnect();
 		}
-
 	}
 
-	public String getUrlString(String urlSpec) throws IOException {
+	public String getUrlString(String urlSpec)throws  IOException {
 		return new String(getUrlBytes(urlSpec));
 	}
 
 	public List<GalleryItem> fetchItems(){
-		List<GalleryItem> items = new ArrayList<>();
+		List <GalleryItem> items = new ArrayList<>();
 
 		try {
 			String url = Uri.parse("https://api.flickr.com/services/rest/")
@@ -68,10 +65,10 @@ public class FlickrFetchr {
 					.appendQueryParameter("nojsoncallback", "1")
 					.appendQueryParameter("extras", "url_s")
 					.build().toString();
+
 			String jsonString = getUrlString(url);
 			Log.i(TAG, "Received JSON: " + jsonString);
 			JSONObject jsonBody = new JSONObject(jsonString);
-
 			parseItems(items, jsonBody);
 		} catch (IOException ioe){
 			Log.e(TAG, "Failed to fetch items", ioe);
@@ -82,26 +79,24 @@ public class FlickrFetchr {
 		return items;
 	}
 
-	private void parseItems(List<GalleryItem> items, JSONObject jsonBody)throws IOException, JSONException{
+	private void parseItems(List<GalleryItem> items, JSONObject jsonBody) throws IOException, JSONException{
 
 		JSONObject photosJsonObject = jsonBody.getJSONObject("photos");
-		JSONArray photosJsonArray = photosJsonObject.getJSONArray("photo");
+		JSONArray photoJsonArray = photosJsonObject.getJSONArray("photo");
 
-		for (int i = 0; i < photosJsonArray.length(); i++){
-			photosJsonObject = photosJsonArray.getJSONObject(i);
+		for (int i = 0; i < photoJsonArray.length(); i++){
+			JSONObject photoJsonObject = photoJsonArray.getJSONObject(i);
 
 			GalleryItem item = new GalleryItem();
-			item.setId(photosJsonObject.getString("id"));
-			item.setCaption(photosJsonObject.getString("title"));
+			item.setId(photoJsonObject.getString("id"));
+			item.setCaption(photoJsonObject.getString("title"));
 
-			if(!photosJsonObject.has("url_s")){
+			if(!photoJsonObject.has("url_s")){ // don't add this GalleryItem to List
 				continue;
 			}
 
-			item.setUrl(photosJsonObject.getString("url_s")); // these don't happen if no url_s
+			item.setUrl(photoJsonObject.getString("url_s"));
 			items.add(item);
 		}
 	}
-
-
 }
