@@ -47,7 +47,7 @@ public class ThumbnailDownloader<T> extends HandlerThread {
 
 	@Override
 	protected void onLooperPrepared() { // called before Looper check queue for the first time
-		mRequestHandler = new Handler(){
+		mRequestHandler = new Handler(){ // initialize requestHandler in HandlerThread -- makes Looper in this class
 			@Override
 			public void handleMessage(Message msg) { // called when message pulled off queue and ready to be processed
 				if (msg.what == MESSAGE_DOWNLOAD){
@@ -70,7 +70,7 @@ public class ThumbnailDownloader<T> extends HandlerThread {
 			final Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length); // construct bitmap
 			Log.i(TAG, "Bitmap created");
 
-			mResponseHandler.post(new Runnable() {
+			mResponseHandler.post(new Runnable() { // tied to UI, implementation declared there
 				@Override
 				public void run() {
 					if(mRequestMap.get(target) != url || mHasQuit) return;
