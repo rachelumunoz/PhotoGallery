@@ -29,7 +29,7 @@ public class PhotoGalleryFragment extends Fragment {
 
 	private RecyclerView mPhotoRecyclerView;
 	private List<GalleryItem> mItems = new ArrayList<>();
-	private ThumbnailDownloader<PhotoViewHolder> mThumbnailDownloader;
+	private ThumbnailDownloader<PhotoViewHolder> mThumbnailDownloader; //subclass of HandlerThread
 
 
 	public static PhotoGalleryFragment newInstance(){ //static factory method so can inject dependencies if needed
@@ -43,7 +43,7 @@ public class PhotoGalleryFragment extends Fragment {
 		new FetchItemsTask().execute(); // executes FlickrFetchr Api call in background thread
 
 		Handler responseHandler = new Handler();
-		mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
+		mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler); // pass in Handler attached to UI
 		mThumbnailDownloader.setThumbnailDownloadListener(
 				new ThumbnailDownloader.ThumbnailDownloadListener<PhotoViewHolder>(){
 					@Override
@@ -54,8 +54,8 @@ public class PhotoGalleryFragment extends Fragment {
 				}
 		);
 
-		mThumbnailDownloader.start();
-		mThumbnailDownloader.getLooper();
+		mThumbnailDownloader.start(); // start the background thread
+		mThumbnailDownloader.getLooper(); // ensures thread is ready -- obviates race condition
 		Log.i(TAG, "Background thread started");
 	}
 
@@ -126,7 +126,7 @@ public class PhotoGalleryFragment extends Fragment {
 //			holder.bindGalleryItem(galleryItem);
 			Drawable placeholder = getResources().getDrawable(R.drawable.bill_up_close);
 			holder.bindDrawable(placeholder);
-			mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl());
+			mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl()); // request to download image is placed in ViewHolder of RecyclerView
 		}
 
 		@Override
