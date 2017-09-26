@@ -12,6 +12,8 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -40,6 +42,7 @@ public class PhotoGalleryFragment extends Fragment {
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setRetainInstance(true);
+		setHasOptionsMenu(true);
 		new FetchItemsTask().execute(); // executes FlickrFetchr Api call in background thread
 
 		Handler responseHandler = new Handler();
@@ -83,6 +86,12 @@ public class PhotoGalleryFragment extends Fragment {
 		super.onDestroy();
 		mThumbnailDownloader.quit();
 		Log.i(TAG, "Background thread destroyed");
+	}
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+		inflater.inflate(R.menu.fragment_photo_gallery, menu);
 	}
 
 	private void setUpAdapter() {
@@ -141,7 +150,14 @@ public class PhotoGalleryFragment extends Fragment {
 	class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>> {
 		@Override
 		protected List<GalleryItem> doInBackground(Void... voids) {
-			return new FlickrFetchr().fetchItems();
+			String query = "robot";
+
+			if (query == null){
+				return new FlickrFetchr().fetchRecentPhotos();
+			} else {
+				return new FlickrFetchr().searchPhotos(query);
+			}
+
 		}
 
 		@Override
