@@ -135,9 +135,6 @@ public class PhotoGalleryFragment extends Fragment {
 		}
 	}
 
-
-
-
 	class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>> {
 		@Override
 		protected List<GalleryItem> doInBackground(Void... voids) {

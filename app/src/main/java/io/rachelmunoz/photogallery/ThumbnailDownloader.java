@@ -17,13 +17,14 @@ import java.util.concurrent.ConcurrentMap;
 
 public class ThumbnailDownloader<T> extends HandlerThread {
 	private static final String TAG = "ThumbnailDownloader";
-	private static final int MESSAGE_DOWNLOAD = 0;
 
+	private static final int MESSAGE_DOWNLOAD = 0;
 	private  boolean mHasQuit = false;
 	private Handler mRequestHandler;
 	private ConcurrentMap<T, String> mRequestMap = new ConcurrentHashMap<>();
 	private Handler mResponseHandler;
 	private ThumbnailDownloadListener<T> mThumbnailDownloadListener;
+
 
 	public interface ThumbnailDownloadListener<T> { // delegates responsibility to class where image is downloaded, sep of concerns
 		void onThumbnailDownloaded(T target, Bitmap thumbnail);
@@ -57,6 +58,7 @@ public class ThumbnailDownloader<T> extends HandlerThread {
 			}
 		};
 	}
+
 
 	private void handleRequest(final T target) {
 		try {
