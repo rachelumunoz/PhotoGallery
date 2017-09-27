@@ -209,9 +209,6 @@ public class PhotoGalleryFragment extends Fragment {
 		}
 	}
 
-
-
-
 	class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>> {
 		private String mQuery;
 
