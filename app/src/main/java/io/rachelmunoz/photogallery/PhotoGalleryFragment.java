@@ -48,8 +48,9 @@ public class PhotoGalleryFragment extends Fragment {
 		setHasOptionsMenu(true);
 		updateItems(); // executes FlickrFetchr Api call in background thread
 
-		Intent i = PollService.newIntent(getActivity());
-		getActivity().startService(i);
+//		Intent i = PollService.newIntent(getActivity());
+//		getActivity().startService(i);
+//		PollService.setServiceAlarm(getActivity(), true);
 
 		Handler responseHandler = new Handler();
 		mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler); // pass in Handler attached to UI
@@ -134,6 +135,10 @@ public class PhotoGalleryFragment extends Fragment {
 			case R.id.menu_item_clear:
 				QueryPreferences.setStoredQuery(getActivity(), null);
 				updateItems(); // ensures images reflect most recent search query
+				return true;
+			case R.id.menu_item_toggle_polling:
+				boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
+				PollService.setServiceAlarm(getActivity(), shouldStartAlarm);
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
