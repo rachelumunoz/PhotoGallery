@@ -1,5 +1,6 @@
 package io.rachelmunoz.photogallery;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -46,6 +47,10 @@ public class PhotoGalleryFragment extends Fragment {
 		setRetainInstance(true);
 		setHasOptionsMenu(true);
 		updateItems(); // executes FlickrFetchr Api call in background thread
+
+//		Intent i = PollService.newIntent(getActivity());
+//		getActivity().startService(i);
+//		PollService.setServiceAlarm(getActivity(), true);
 
 		Handler responseHandler = new Handler();
 		mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler); // pass in Handler attached to UI
@@ -122,6 +127,14 @@ public class PhotoGalleryFragment extends Fragment {
 			}
 		});
 
+		MenuItem toggleitem = menu.findItem(R.id.menu_item_toggle_polling);
+		if (PollService.isServiceAlarmOn(getActivity())){
+			toggleitem.setTitle(R.string.stop_polling);
+		} else {
+			toggleitem.setTitle(R.string.start_polling);
+		}
+
+
 	}
 
 	@Override
@@ -130,6 +143,11 @@ public class PhotoGalleryFragment extends Fragment {
 			case R.id.menu_item_clear:
 				QueryPreferences.setStoredQuery(getActivity(), null);
 				updateItems(); // ensures images reflect most recent search query
+				return true;
+			case R.id.menu_item_toggle_polling:
+				boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
+				PollService.setServiceAlarm(getActivity(), shouldStartAlarm);
+				getActivity().invalidateOptionsMenu();
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
