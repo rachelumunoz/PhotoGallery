@@ -1,14 +1,23 @@
 package io.rachelmunoz.photogallery;
 
+import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +26,7 @@ import java.util.concurrent.TimeUnit;
  * Created by rachelmunoz on 9/26/17.
  */
 
+@TargetApi(26)
 public class PollService extends IntentService {
 	private static final String TAG = "PollService";
 
@@ -38,6 +48,8 @@ public class PollService extends IntentService {
 			alarmManager.cancel(pi);
 			pi.cancel();
 		}
+
+		QueryPreferences.setAlarmOn(context, isOn);
 	}
 
 	public static boolean isServiceAlarmOn(Context context){
@@ -71,6 +83,39 @@ public class PollService extends IntentService {
 			Log.i(TAG, "Got an old result " + resultId);
 		} else {
 			Log.i(TAG, "Got a new result " + resultId);
+
+			Resources resources = getResources();
+			Intent i = PhotoGalleryActivity.newIntent(this);
+			PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
+
+			String CHANNEL_ID = "channel_1";
+			CharSequence name = getString(R.string.channel_name);
+			int importance = NotificationManager.IMPORTANCE_DEFAULT;
+			NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+
+			Notification notification = new NotificationCompat.Builder(this)
+					.setTicker(resources.getString(R.string.new_pictures_title))
+					.setSmallIcon(android.R.drawable.ic_menu_report_image)
+					.setContentTitle(resources.getString(R.string.new_pictures_title))
+					.setContentText(resources.getString(R.string.new_pictures_text))
+					.setContentIntent(pi)
+					.setAutoCancel(true)
+					.setChannel(CHANNEL_ID)
+					.build();
+
+			NotificationManager mNotificationManager =
+					(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+//			NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+
+
+//			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				mNotificationManager.createNotificationChannel(mChannel);
+
+//			}
+
+			mNotificationManager.notify(0, notification);
 		}
 
 		QueryPreferences.setLastResultId(this, resultId);
