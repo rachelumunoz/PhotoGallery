@@ -10,12 +10,14 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -84,38 +86,35 @@ public class PollService extends IntentService {
 		} else {
 			Log.i(TAG, "Got a new result " + resultId);
 
+			String CHANNEL_ID = "channel_1";
 			Resources resources = getResources();
 			Intent i = PhotoGalleryActivity.newIntent(this);
 			PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
 
-			String CHANNEL_ID = "channel_1";
-			CharSequence name = getString(R.string.channel_name);
-			int importance = NotificationManager.IMPORTANCE_DEFAULT;
-			NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+			NotificationManager mNotificationManager =
+					(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//			NotificationManagerCompat mNotificationManager = NotificationManagerCompat.from(this);
 
-			Notification notification = new NotificationCompat.Builder(this)
+			NotificationChannel mChannel;
+			int importance = NotificationManager.IMPORTANCE_DEFAULT;
+
+			NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
 					.setTicker(resources.getString(R.string.new_pictures_title))
 					.setSmallIcon(android.R.drawable.ic_menu_report_image)
 					.setContentTitle(resources.getString(R.string.new_pictures_title))
 					.setContentText(resources.getString(R.string.new_pictures_text))
 					.setContentIntent(pi)
-					.setAutoCancel(true)
-					.setChannel(CHANNEL_ID)
-					.build();
+					.setContentTitle(resources.getString(R.string.new_pictures_title))
+					.setPriority(NotificationCompat.PRIORITY_DEFAULT)
+					.setAutoCancel(true);
 
-			NotificationManager mNotificationManager =
-					(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-//			NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-
-
-
-//			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				mChannel = new NotificationChannel(CHANNEL_ID, this.getString(R.string.app_name), importance);
+				mChannel.setDescription("notification");
 				mNotificationManager.createNotificationChannel(mChannel);
+			}
 
-//			}
-
-			mNotificationManager.notify(0, notification);
+			mNotificationManager.notify(0, builder.build());
 		}
 
 		QueryPreferences.setLastResultId(this, resultId);
