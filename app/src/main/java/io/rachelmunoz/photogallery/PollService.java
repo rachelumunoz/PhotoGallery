@@ -98,28 +98,23 @@ public class PollService extends IntentService {
 			NotificationChannel mChannel;
 			int importance = NotificationManager.IMPORTANCE_DEFAULT;
 
-			Notification.Builder builder = new Notification.Builder(this)
+			NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
 					.setTicker(resources.getString(R.string.new_pictures_title))
 					.setSmallIcon(android.R.drawable.ic_menu_report_image)
 					.setContentTitle(resources.getString(R.string.new_pictures_title))
 					.setContentText(resources.getString(R.string.new_pictures_text))
 					.setContentIntent(pi)
-					.setContentTitle(resources.getString(R.string.new_pictures_title));
+					.setContentTitle(resources.getString(R.string.new_pictures_title))
+					.setPriority(NotificationCompat.PRIORITY_DEFAULT)
+					.setAutoCancel(true);
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 				mChannel = new NotificationChannel(CHANNEL_ID, this.getString(R.string.app_name), importance);
-				// Configure the notification channel.
 				mChannel.setDescription("notification");
 				mNotificationManager.createNotificationChannel(mChannel);
-			} else {
-				builder
-						.setPriority(Notification.PRIORITY_DEFAULT)
-						.setAutoCancel(true);
 			}
 
-			builder.setChannelId(CHANNEL_ID);
 			mNotificationManager.notify(0, builder.build());
-
 		}
 
 		QueryPreferences.setLastResultId(this, resultId);
