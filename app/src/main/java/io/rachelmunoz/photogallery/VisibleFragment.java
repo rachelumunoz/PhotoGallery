@@ -32,8 +32,11 @@ public abstract class VisibleFragment extends Fragment {
 	private BroadcastReceiver mOnShowNotification = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
+			// cancel notification/Intent because that means this app is running and don't need to be notified
 			Log.i(TAG, "cancelling notification");
 			setResultCode(Activity.RESULT_CANCELED);
 		}
 	};
 }
+
+// this abstract class registers a DynamicReceiver with the private signature so only accessbile by this app

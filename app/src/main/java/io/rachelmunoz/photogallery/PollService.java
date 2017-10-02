@@ -1,6 +1,7 @@
 package io.rachelmunoz.photogallery;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification;
@@ -119,12 +120,19 @@ public class PollService extends IntentService {
 			}
 
 //			mNotificationManager.notify(0, builder.build());
-
 //			sendBroadcast(new Intent(ACTION_SHOW_NOTIFICATION), PERM_PRIVATE);
 
+			showBackgroundNotification(0, builder.build());
 		}
 
 		QueryPreferences.setLastResultId(this, resultId);
+	}
+
+	private void showBackgroundNotification(int requestCode, Notification notification) {
+		Intent i = new Intent(ACTION_SHOW_NOTIFICATION);
+		i.putExtra(REQUEST_CODE, requestCode);
+		i.putExtra(NOTIFICATION, notification);
+		sendOrderedBroadcast(i, PERM_PRIVATE, null, null, Activity.RESULT_OK, null, null);
 	}
 
 	private boolean isNetworkAvailableAndConnected() {
