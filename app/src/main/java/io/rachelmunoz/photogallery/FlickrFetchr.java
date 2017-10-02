@@ -65,12 +65,12 @@ public class FlickrFetchr {
 	}
 
 	public List<GalleryItem> fetchRecentPhotos(){
-		String url = builUrl(FETCH_RECENTS_METHOD, null);
+		String url = buildUrl(FETCH_RECENTS_METHOD, null);
 		return downloadGalleryItems(url);
 	}
 
 	public List<GalleryItem> searchPhotos(String query){
-		String url = builUrl(SEARCH_METHOD, query);
+		String url = buildUrl(SEARCH_METHOD, query);
 		return downloadGalleryItems(url);
 	}
 
@@ -93,7 +93,7 @@ public class FlickrFetchr {
 		return items;
 	}
 
-	private String builUrl(String method, String query){
+	private String buildUrl(String method, String query){
 		Uri.Builder uriBuilder = ENDPOINT.buildUpon()
 				.appendQueryParameter("method", method);
 
