@@ -29,7 +29,7 @@ import java.util.List;
  * Created by rachelmunoz on 8/5/17.
  */
 
-public class PhotoGalleryFragment extends Fragment {
+public class PhotoGalleryFragment extends VisibleFragment {
 	private static final String TAG = "PhotoGalleryFragment";
 
 	private RecyclerView mPhotoRecyclerView;
@@ -154,7 +154,7 @@ public class PhotoGalleryFragment extends Fragment {
 		}
 	}
 
-	private void updateItems() {
+	private void updateItems() { // method that gets most recent search and interfaces with Flickr API to update list
 		String query = QueryPreferences.getStoredQuery(getActivity());
 		new FetchItemsTask(query).execute();
 	}

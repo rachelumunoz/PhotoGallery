@@ -34,6 +34,11 @@ public class PollService extends IntentService {
 
 	private static final long POLL_INTERVAL_MS = TimeUnit.MINUTES.toMillis(1);
 
+	public static final String ACTION_SHOW_NOTIFICATION = "io.rachelmunoz.photogallery.SHOW_NOTIFICATION";
+	public static final String PERM_PRIVATE = "io.rachelmunoz.photogallery.PRIVATE";
+	public static final String REQUEST_CODE = "REQUEST_CODE";
+	public static final String NOTIFICATION = "NOTIFICATION";
+
 	public static Intent newIntent(Context context){
 		return new Intent(context, PollService.class);
 	}
@@ -54,7 +59,7 @@ public class PollService extends IntentService {
 		QueryPreferences.setAlarmOn(context, isOn);
 	}
 
-	public static boolean isServiceAlarmOn(Context context){
+	public static boolean isServiceAlarmOn(Context context){  // check of whether there is a PendingIntent hooked up to the Alarm
 		Intent i = PollService.newIntent(context);
 		PendingIntent pi = PendingIntent.getService(context, 0, i, PendingIntent.FLAG_NO_CREATE); // return null if Alarm not on
 		return pi != null;
@@ -105,7 +110,6 @@ public class PollService extends IntentService {
 					.setContentText(resources.getString(R.string.new_pictures_text))
 					.setContentIntent(pi)
 					.setContentTitle(resources.getString(R.string.new_pictures_title))
-					.setPriority(NotificationCompat.PRIORITY_DEFAULT)
 					.setAutoCancel(true);
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -114,7 +118,10 @@ public class PollService extends IntentService {
 				mNotificationManager.createNotificationChannel(mChannel);
 			}
 
-			mNotificationManager.notify(0, builder.build());
+//			mNotificationManager.notify(0, builder.build());
+
+//			sendBroadcast(new Intent(ACTION_SHOW_NOTIFICATION), PERM_PRIVATE);
+
 		}
 
 		QueryPreferences.setLastResultId(this, resultId);
