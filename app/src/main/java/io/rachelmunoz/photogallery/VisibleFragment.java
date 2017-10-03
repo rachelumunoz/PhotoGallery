@@ -19,7 +19,7 @@ public abstract class VisibleFragment extends Fragment {
 	@Override
 	public void onStart() {
 		super.onStart();
-		IntentFilter filter = new IntentFilter(PollService.ACTION_SHOW_NOTIFICATION);
+		IntentFilter filter = new IntentFilter(PollService.ACTION_SHOW_NOTIFICATION); // Standalone declared in manifest--?? no?
 		getActivity().registerReceiver(mOnShowNotification, filter, PollService.PERM_PRIVATE, null);
 	}
 
