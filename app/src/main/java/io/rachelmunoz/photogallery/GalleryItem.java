@@ -1,5 +1,7 @@
 package io.rachelmunoz.photogallery;
 
+import android.net.Uri;
+
 /**
  * Created by rachelmunoz on 9/20/17.
  */
@@ -8,11 +10,7 @@ public class GalleryItem {
 	private String mCaption;
 	private String mId;
 	private String mUrl;
-
-	@Override
-	public String toString() {
-		return mCaption;
-	}
+	private String mOwner;
 
 	public String getCaption() {
 		return mCaption;
@@ -34,7 +32,28 @@ public class GalleryItem {
 		return mUrl;
 	}
 
+	public String getOwner() {
+		return mOwner;
+	}
+
+	public void setOwner(String owner) {
+		mOwner = owner;
+	}
+
+	public Uri getPhotoPageUri(){
+		return Uri.parse("https://www.flickr.com/photos/")
+				.buildUpon()
+				.appendPath(mOwner)
+				.appendPath(mId)
+				.build();
+	}
+
 	public void setUrl(String url) {
 		mUrl = url;
+	}
+
+	@Override
+	public String toString() {
+		return mCaption;
 	}
 }
