@@ -19,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Gallery;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -166,17 +167,30 @@ public class PhotoGalleryFragment extends VisibleFragment {
 
 	}
 
-	class PhotoViewHolder extends RecyclerView.ViewHolder {
+	class PhotoViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 		private ImageView mItemImageView;
+		private GalleryItem mGalleryItem;
 
 		public PhotoViewHolder(View itemView) {
 			super(itemView);
 
 			mItemImageView = (ImageView) itemView.findViewById(R.id.item_image_view);
+			itemView.setOnClickListener(this);
 		}
 
 		public void bindDrawable(Drawable drawable){
 			mItemImageView.setImageDrawable(drawable);
+		}
+
+		public void bindGalleryItem(GalleryItem galleryItem) {
+			mGalleryItem = galleryItem;
+		}
+
+		@Override
+		public void onClick(View view) {
+//			Intent i = new Intent(Intent.ACTION_VIEW, mGalleryItem.getPhotoPageUri());
+			Intent i = PhotoPageActivity.newIntent(getActivity(), mGalleryItem.getPhotoPageUri());
+			startActivity(i);
 		}
 	}
 
@@ -198,6 +212,7 @@ public class PhotoGalleryFragment extends VisibleFragment {
 		public void onBindViewHolder(PhotoViewHolder holder, int position) {
 			GalleryItem galleryItem = mGalleryItems.get(position);
 //			holder.bindGalleryItem(galleryItem);
+			holder.bindGalleryItem(galleryItem);
 			Drawable placeholder = getResources().getDrawable(R.drawable.bill_up_close);
 			holder.bindDrawable(placeholder);
 			mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl()); // request to download image is placed in ViewHolder of RecyclerView
